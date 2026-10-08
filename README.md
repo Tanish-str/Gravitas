@@ -1,106 +1,167 @@
 # GRAVITAS
-**Gravity Sensitivity Screening Engine for Space Biology & Tissue Engineering**
 
-[![CI](https://github.com/AryanTakalkar/gravitas-engine/actions/workflows/ci.yml/badge.svg)](https://github.com/AryanTakalkar/gravitas-engine/actions/workflows/ci.yml)
-[![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+### Gravity Sensitivity Screening Engine for Space Biology & Tissue Engineering
 
-**GRAVITAS** is a deterministic computational physics engine and AI surrogate designed to answer a critical aerospace question: *If we send a biological experiment (like a cell organoid or tumor spheroid) into space, will the change in gravity actually affect the biology, or will diffusion dominate regardless?*
+<p align="center">
+  <strong>A deterministic multiphysics engine + Physics-Informed Neural Network for screening whether gravity changes are biologically meaningful.</strong>
+</p>
 
-By linking external fluid dynamics (Grashof, Péclet, Bond dimensionless numbers) to internal cellular biology (1D Reaction-Diffusion PDEs with Michaelis-Menten kinetics), GRAVITAS acts as a pre-flight vetting gate to prevent the costly launch of gravity-insensitive payloads.
-
----
-
-##  Key Features
-
-- **Multi-Physics Regimes:** Automatically calculates boundaries for buoyancy-driven convection, sedimentation (Stokes), multiphase separation, and hydrostatic pressure across planetary gravity levels (e.g., Lunar, Martian, Microgravity).
-- **Physics-Informed Neural Network (PINN):** Features a state-of-the-art PyTorch AI surrogate trained via Latin Hypercube Sampling. The PINN learns the underlying Michaelis-Menten differential equations, accelerating screening times by 10,000x compared to traditional numerical solvers.
-- **Strict Data Provenance:** Every physical constant used in the engine is tracked in a centralized YAML registry with direct academic citations, ensuring aerospace-grade auditability.
-- **Interactive Dashboard:** Includes a Streamlit web application for real-time visualization of mechanism rankings and concentration profiles.
-- **CI/CD Pipeline:** Fully version-controlled with a GitHub Actions pipeline ensuring mathematical limits and determinism tests pass on every commit.
+<p align="center">
+  <a href="https://github.com/Tanish-str/Gravitas/actions">
+    <img src="https://img.shields.io/badge/CI-GitHub%20Actions-blue?logo=githubactions" alt="CI">
+  </a>
+  <img src="https://img.shields.io/badge/Python-3.9%2B-blue?logo=python" alt="Python 3.9+">
+  <img src="https://img.shields.io/badge/PyTorch-2.0%2B-ee4c2c?logo=pytorch" alt="PyTorch">
+  <img src="https://img.shields.io/badge/Streamlit-Dashboard-ff4b4b?logo=streamlit" alt="Streamlit">
+  <img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="MIT License">
+</p>
 
 ---
 
-##  Architecture
+## Overview
 
-1. **The Classifier:** Takes fluid properties and cell aggregate geometries to calculate dimensionless numbers, checking if a fluid regime boundary is crossed when gravity drops.
-2. **The Numerical Solver:** Uses finite-difference and SciPy's non-linear root finders to solve the steady-state nutrient concentration gradients.
-3. **The AI Surrogate:** A Parametric PINN that replaces the numerical solver for instantaneous Generative Design iterations.
-4. **The Verdict Engine:** Compares the drop in central nutrient concentration against biological measurement uncertainty to issue a definitive **PASS**, **MARGINAL**, or **FAIL**.
+**GRAVITAS** is a computational screening engine for **space biology and tissue-engineering experiments**.
 
----
+The central question is:
 
-##  Installation
+> **When gravity changes, does the biology change because of gravity-driven transport, or does diffusion dominate anyway?**
 
-GRAVITAS requires Python 3.9 or higher. 
+GRAVITAS connects external transport physics with internal biological reaction-diffusion behavior. It combines **dimensionless fluid-dynamics analysis**, a **1D reaction-diffusion solver**, **Michaelis-Menten kinetics**, and a **Physics-Informed Neural Network (PINN)** to estimate how a biological experiment may respond under different gravity environments.
 
-Clone the repository and install the engine along with its developer and AI dependencies:
+The intended outcome is a practical pre-flight screening gate:
 
-```bash
-git clone https://github.com/AryanTakalkar/gravitas-engine.git
-cd gravitas-engine
-pip install -e .[dev,ai]
-```
+**PASS → MARGINAL → FAIL**
+
+This can help identify experiments where a gravity-dependent effect is large enough to justify further experimental investigation before committing payload mass, launch opportunities, and laboratory resources.
 
 ---
 
-##  Usage
+## Why GRAVITAS?
 
-### 1. Launch the Interactive Dashboard
-The easiest way to analyze an experiment is via the web UI.
-```bash
-streamlit run dashboard.py
-```
-*This will open a browser window at `http://localhost:8501`.*
+Space-biology experiments can be expensive and operationally constrained. A useful screening tool should answer three questions early:
 
-### 2. Run the AI Training Pipeline
-Train the Physics-Informed Neural Network to solve the reaction-diffusion equations across a continuous parameter space.
-```bash
-python train_pinn.py
-```
-*Outputs a trained `surrogate_pinn.pth` model and convergence plots.*
+| Question | GRAVITAS Approach |
+|---|---|
+| Does gravity alter the transport regime? | Dimensionless-number analysis |
+| Does transport alter the biological concentration field? | Reaction-diffusion solver |
+| Is the predicted change meaningful? | Verdict-based sensitivity screening |
 
-### 3. Use as a Python API
-You can integrate GRAVITAS directly into your own computational pipelines:
-```python
-from gravitas import Experiment
-from gravitas.verdict import screen
+### Core concept
 
-# Load biological configuration
-exp = Experiment.from_yaml("examples/reference_case.yaml")
-
-# Screen for Lunar Gravity (0.16g)
-# standard g = 9.80665 m/s^2, moon = ~1.62 m/s^2
-verdict = screen(exp, target_g=1.62)
-
-print(f"Result: {verdict.result}")
-print(f"Limiting Factor: {verdict.limiting_reason}")
-```
+**Gravity change → Transport regime → Nutrient availability → Biological sensitivity**
 
 ---
 
-##  Directory Structure
+## Key Features
+
+### Multiphysics Gravity Screening
+
+GRAVITAS evaluates mechanisms including:
+
+- Buoyancy-driven convection
+- Sedimentation / Stokes behavior
+- Multiphase separation
+- Hydrostatic pressure effects
+- Gravity-dependent membrane transport
+
+It uses dimensionless groups such as:
+
+- **Grashof number**
+- **Péclet number**
+- **Bond number**
+
+to determine whether a gravity change is likely to push an experiment across a meaningful physical regime boundary.
+
+---
+
+### Reaction-Diffusion Modeling
+
+The biological layer models spatial concentration gradients inside a cell aggregate using a **1D steady-state reaction-diffusion formulation** with **Michaelis-Menten kinetics**.
+
+This provides an interpretable bridge between:
+
+**external transport physics**  
+↓  
+**internal biological state**
+
+---
+
+### Physics-Informed Neural Network
+
+GRAVITAS includes a PyTorch-based **Physics-Informed Neural Network (PINN)** designed to approximate reaction-diffusion solutions across a continuous parameter space.
+
+The training pipeline uses **Latin Hypercube Sampling (LHS)** across the model's dimensionless parameters.
+
+The objective is to provide a fast surrogate for repeated screening and design-space exploration while retaining the governing physics within the training loss.
+
+---
+
+### Data Provenance
+
+Physical parameters are maintained through a centralized registry so that model inputs remain traceable to their documented sources.
+
+This improves:
+
+- Reproducibility
+- Auditability
+- Scientific transparency
+- Future model extension
+
+---
+
+### Interactive Dashboard
+
+A Streamlit dashboard provides:
+
+- Experiment configuration selection
+- Target-gravity input
+- PASS / MARGINAL / FAIL screening
+- Mechanism ranking
+- Concentration-profile visualization
+- Parameter provenance
+
+---
+
+# System Architecture
 
 ```text
-gravitas-engine/
-├── dashboard.py                # Streamlit Web UI
-├── train_pinn.py               # AI Training script for the PINN
-├── examples/                   # YAML files defining cell organoid experiments
-├── src/gravitas/               # Core Engine Source Code
-│   ├── ai/                     # PyTorch PINN Architecture & Physics Loss
-│   ├── mechanisms/             # Dimensionless fluid dynamics logic
-│   ├── registry/               # Data provenance and cited physical constants
-│   └── solver/                 # 1D Finite-Difference Reaction-Diffusion solver
-└── tests/                      # PyTest suite for analytical limits and convergence
-```
-
----
-
-##  Running Tests
-To ensure the physics engine is mathematically sound, run the validation suite:
-```bash
-pytest tests/ -v
-```
-
-##  License
-This project is licensed under the MIT License.
+                ┌────────────────────────────┐
+                │   Experiment Configuration │
+                │        YAML / Inputs       │
+                └─────────────┬──────────────┘
+                              │
+                              ▼
+                ┌────────────────────────────┐
+                │     Physics Classifier     │
+                │ Grashof / Peclet / Bond   │
+                │ Sedimentation / Pressure  │
+                └─────────────┬──────────────┘
+                              │
+                        Sensitivity
+                              │
+                              ▼
+                ┌────────────────────────────┐
+                │ Reaction-Diffusion Solver  │
+                │ Finite Difference + SciPy │
+                │ Michaelis-Menten kinetics │
+                └─────────────┬──────────────┘
+                              │
+                       Reference solution
+                              │
+                ┌─────────────▼──────────────┐
+                │       PINN Surrogate       │
+                │        PyTorch Model       │
+                │       LHS Training         │
+                └─────────────┬──────────────┘
+                              │
+                              ▼
+                ┌────────────────────────────┐
+                │       Verdict Engine       │
+                │   PASS / MARGINAL / FAIL  │
+                └─────────────┬──────────────┘
+                              │
+                              ▼
+                ┌────────────────────────────┐
+                │     Streamlit Dashboard    │
+                │ Rankings + Profiles + Data │
+                └────────────────────────────┘
